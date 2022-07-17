@@ -6,6 +6,7 @@ import { WalletContext } from "../context/wallet";
 import { BUSDABI, STAKING_POOL } from '../abi';
 import { anySeries } from "async";
 import BigNumber from "bignumber.js";
+import ContractUtils from '../utils/contractUtils';
 
 const Home = () => {
     const global = useContext(StoreContext);
@@ -78,15 +79,39 @@ const Home = () => {
         }
     }
 
+    const onClickConnect = async () => {
+        let res = await ContractUtils.connectWallet();
+        if (res.address) {
+            global.setShowToast(true);
+            setWalletAddress(res.address);
+            window.localStorage.setItem('walletLocalStorageKey', res.address);
+        }
+        else {
+            global.setShowToast(true);
+            // setToastType(2)
+            // setToastMessage(res.status)
+            setWalletAddress("");
+        }
+    }
+    const onClickDisconnect = async () => {
+        await ContractUtils.disconnectWallet();
+        await window.localStorage.removeItem('walletLocalStorageKey');
+        setWalletAddress("");
+    }
     return (
         <>
             <div className="mobile-header">
                 <div className="logo">
                     <h1 className="text-center">CTHULHU</h1>
                     <img src="/svgs/index.svg" alt=""/>
-                    <button type="button" className="button connect-wallet-btn">
-                        {localStorage.getItem("walletLocalStorageKey").substr(0, 6)}...{localStorage.getItem("walletLocalStorageKey").slice(30)}
-                    </button>
+                    {walletAddress == '' ?
+                    <>
+                        <button className='connectWallet2' onClick={onClickConnect}>CONNECT WALLET</button>
+                    </>
+                    :
+                    <>
+                        <button className='connectWallet2' onClick={onClickDisconnect}>{walletAddress.substr(0, 6)}...{walletAddress.slice(30)}</button>
+                    </>}
                 </div>
             </div>
             <div className="home">
@@ -155,7 +180,7 @@ const Home = () => {
                 </div>
             </div>
             
-            <img className="position pc vector1" src="/svgs/Vector1.svg" />
+            <img className="position pc vector1" src="/svgs/Vector1.svg" alt="f"/>
             <img className="position pc vector2" src="/svgs/Vector1.svg" />
             <img className="position pc vector3" src="/svgs/Vector3.svg" />
             <img className="position pc back1" src="/svgs/back1.svg" />
